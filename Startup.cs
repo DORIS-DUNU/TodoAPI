@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -8,10 +9,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TodoAPI.Data;
 using TodoAPI.Model;
@@ -33,6 +36,42 @@ namespace TodoAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddIdentity<AppUser, IdentityRole>()
+               .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 6;
+                options.User.RequireUniqueEmail = true;
+            });
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = Configuration["JwtSettings:Issuer"],
+                        ValidAudience = Configuration["JwtSettings:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtSettings:SecretKey"])),
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+
             services.AddDbContextPool<ApplicationDbContext>(opt =>
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
@@ -46,6 +85,7 @@ namespace TodoAPI
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
                     Description = "JWT Authorization header using the Bearer scheme. " +
                     "\r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\""
 
@@ -66,21 +106,12 @@ namespace TodoAPI
                 });
                 
             });
-            services.AddIdentity<AppUser, IdentityRole>()
-               .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+            
 
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequiredLength = 6;
-                options.User.RequireUniqueEmail = true;
-            });
-            services.AddScoped<ITokensGeneratorService, TokensGeneratorService>();
-            //services.AddScoped<IUserRepository, UserRepository>();
-            services.AddTransient<IAccountService, AccountService>();
+            services.AddTransient<ITokensGeneratorService, TokensGeneratorService>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ITodoRepository, TodoRepository>();
+            services.AddScoped<IAccountService, AccountService>();
 
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
@@ -101,8 +132,8 @@ namespace TodoAPI
 
             app.UseRouting();
 
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

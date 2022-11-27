@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace TodoAPI.Model
 {
@@ -10,6 +12,8 @@ namespace TodoAPI.Model
         public string LastName { get; set; } 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        public ICollection<ToDoModel> Todos { get; set; }
 
     }
 }

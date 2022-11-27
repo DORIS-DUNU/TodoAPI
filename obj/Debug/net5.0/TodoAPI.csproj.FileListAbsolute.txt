@@ -66,3 +66,4 @@ C:\Users\hp\source\repos\API\TodoAPI\bin\Debug\net5.0\Microsoft.Extensions.Ident
 C:\Users\hp\source\repos\API\TodoAPI\bin\Debug\net5.0\Microsoft.AspNetCore.JsonPatch.dll
 C:\Users\hp\source\repos\API\TodoAPI\bin\Debug\net5.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 C:\Users\hp\source\repos\API\TodoAPI\bin\Debug\net5.0\Newtonsoft.Json.Bson.dll
+C:\Users\hp\source\repos\API\TodoAPI\bin\Debug\net5.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

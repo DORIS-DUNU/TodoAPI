@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TodoAPI.Data;
 using TodoAPI.Model;
@@ -13,63 +15,63 @@ namespace TodoAPI.Repository
         {
             _context = context;
         }
-        public async Task<string> AddTodo(TodoDto model)
-        {
-            var TodoEntity = new ToDoModel
-            {
-                IsDone = model.IsDone,
-                Description = model.Description
-                
-            };
 
-            var todo = await _context.ToDos.AddAsync(TodoEntity);
+        public async Task<string> AddTodo(string userId, TodoDto model)
+        {
+            var user = await _context.Users.Include(x=>x.Todos)
+                .FirstOrDefaultAsync(x=>x.Id == userId);
+            if (user == null)
+                return null;
+            var todo = new ToDoModel
+            {
+                UserId = userId,
+                Task = model.Task,
+                Description = model.Description,
+                IsDone = model.IsDone,
+            };
+            var addedTodo = await _context.ToDos.AddAsync(todo);
             await _context.SaveChangesAsync();
-            return todo.Entity.Id;
+            return addedTodo.Entity.Id;
         }
 
-        public async Task<bool> UpdateTodo(string id, TodoDto model)
+        public async Task<bool> DeleteTodo(string todoId)
         {
-            var todo = await _context.ToDos.FirstOrDefaultAsync(usr => usr.Id == id);
+            var todo = await _context.ToDos.FirstOrDefaultAsync(x=>x.Id==todoId);
             if (todo == null)
                 return false;
-
-            todo.IsDone = model.IsDone;
-            todo.Description = model.Description;
-           
-
-            _context.ToDos.Update(todo);
-            await _context.SaveChangesAsync();
+            _context.ToDos.Remove(todo);
             return true;
         }
 
-        public async Task<string> DeleteTodo(string id)
+        public async Task<List<ToDoModel>> GetAllTodosForAUser(string userId)
         {
-            var todo = await _context.ToDos.FirstOrDefaultAsync(x => x.Id == id);
+            var todos = await _context.ToDos.Where(x=>x.UserId == userId).ToListAsync();
+            if (!todos.Any())
+                return null;
+            return todos;
+        }
 
+        public async Task<ToDoModel> GetTodoById(string todoId)
+        {
+            var todo = await _context.ToDos.FirstOrDefaultAsync(x => x.Id == todoId);
             if (todo == null)
-                return "Todo not found!";
+                return null;
+            return todo;
+        }
 
-            _context.Remove(todo);
+        public async Task<bool> UpdateTodo(string userId, string todoId, TodoDto model)
+        {
+            var todo = await _context.ToDos.FirstOrDefaultAsync(x => x.UserId == userId && x.Id == todoId);
+            if (todo == null)
+                return false;
+            todo.IsDone = model.IsDone;
+            todo.Description = model.Description;
+            todo.Task = model.Task;
+            _context.ToDos.Update(todo);
             await _context.SaveChangesAsync();
-            return "Todo deleted successfully";
-        }
 
-       public async Task<string> GetTodo()
-        {
-            var todo = await _context.ToDos.FirstOrDefaultAsync(x => x.Id == id);
-            if (todo == null)
-                return null;
-            return todo;
+            return true;
         }
-
-        public async Task<ToDoModel> GetById(string id)
-        {
-            var todo = await _context.ToDos.FirstOrDefaultAsync(x => x.Id == id);
-            if (todo == null)
-                return null;
-            return todo;
-        }
-        
     }
 }
 

@@ -11,7 +11,5 @@ namespace TodoAPI.Model.Dtos
         [Required]
        
         public bool IsDone { get; set; }  
-
-
     }
 }

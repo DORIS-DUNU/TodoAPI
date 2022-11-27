@@ -4,7 +4,8 @@ namespace TodoAPI.Model
 {
     public class ToDoModel
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString(); 
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string UserId { get; set; }
         public string Task  { get; set; }
 
         public string Description { get; set; } 

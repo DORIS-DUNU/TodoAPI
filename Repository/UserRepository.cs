@@ -62,7 +62,7 @@ namespace TodoAPI.Repository
 
         public async Task<AppUser> GetUserById(string id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+            var user = await _context.Users.Include(x=>x.Todos).FirstOrDefaultAsync(x => x.Id == id);
             if (user == null)
                 return null;
             return user;
@@ -70,7 +70,7 @@ namespace TodoAPI.Repository
 
         public async Task<AppUser> GetUserByEmail(string email)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+            var user = await _context.Users.Include(x=>x.Todos).FirstOrDefaultAsync(x => x.Email == email);
             if (user == null)
                 return null;
             return user;
@@ -78,7 +78,7 @@ namespace TodoAPI.Repository
 
         public async Task<List<AppUser>> GetAllUsers(PageQueryHelper pageQuery)
         {
-            var users = _context.Users.AsQueryable();
+            var users = _context.Users.Include(x => x.Todos).AsQueryable();
             var count = users.Count();
 
             int pageSize = pageQuery.PageSize;

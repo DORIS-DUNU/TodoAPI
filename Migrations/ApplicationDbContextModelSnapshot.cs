@@ -229,10 +229,12 @@ namespace TodoAPI.Migrations
 
             modelBuilder.Entity("TodoAPI.Model.ToDoModel", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -249,7 +251,12 @@ namespace TodoAPI.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.ToTable("ToDos");
                 });
@@ -303,6 +310,18 @@ namespace TodoAPI.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("TodoAPI.Model.ToDoModel", b =>
+                {
+                    b.HasOne("TodoAPI.Model.AppUser", null)
+                        .WithMany("Todos")
+                        .HasForeignKey("AppUserId");
+                });
+
+            modelBuilder.Entity("TodoAPI.Model.AppUser", b =>
+                {
+                    b.Navigation("Todos");
                 });
 #pragma warning restore 612, 618
         }

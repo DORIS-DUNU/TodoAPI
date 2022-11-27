@@ -1,22 +1,20 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using TodoAPI.Data.Model;
+using TodoAPI.Model;
 using TodoAPI.Model.Dtos;
 
 namespace TodoAPI.Repository
 {
     public interface ITodoRepository
     {
-        Task<int> AddTodo(TodoDto model);
-        Task<bool> UpdateTodo(string id, TodoDto model);
-        Task<int> DeleteTodo(string id);
+        Task<string> AddTodo(string userId, TodoDto model);
+        Task<bool> UpdateTodo(string userId, string todoId,  TodoDto model);
+        Task<bool> DeleteTodo(string todoId);
 
-        Task<int> GetTodo();
+        Task<List<ToDoModel>> GetAllTodosForAUser(string userId);
 
-        Task<bool> GetById(string id);
-
-        Task<bool> GetByEmail(string email);
-
-        
+        Task<ToDoModel> GetTodoById(string id);        
     }
 }
 

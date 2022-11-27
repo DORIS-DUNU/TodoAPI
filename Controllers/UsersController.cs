@@ -61,8 +61,8 @@ namespace TodoAPI.Controllers
             return Ok(user);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllUsers([FromQuery] int pageNum, [FromQuery] int pageSize)
+        [HttpGet("get-all/{pageNum}/{pageSize}")]
+        public async Task<IActionResult> GetAllUsers(int pageNum,  int pageSize)
         {
             var users = await _userRepository.GetAllUsers(new PageQueryHelper
             {
